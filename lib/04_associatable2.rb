@@ -24,5 +24,5 @@ module Associatable
 
       source_options.model_class.new(res.first)
     end
-  end
+  e 
 end

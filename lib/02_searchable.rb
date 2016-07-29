@@ -1,11 +1,13 @@
 require_relative 'db_connection'
 require_relative '01_sql_object'
+require_relative 'relation'
 
 module Searchable
+
   def where(params)
 
     where_string = params.map{|k, v| "#{k} = ?"}.join(" AND ")
-    res = DBConnection.execute(<<-SQL, *params.values)
+    q = <<-SQL
       SELECT
         *
       FROM
@@ -14,8 +16,9 @@ module Searchable
         #{where_string}
     SQL
 
-    res.map{|row| self.new(row)}
+    res = Relation.new(self, q, *params.values)
   end
+
 end
 
 class SQLObject

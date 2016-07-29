@@ -20,7 +20,6 @@ end
 
 class BelongsToOptions < AssocOptions
   attr_reader :foreign_key, :primary_key, :class_name
-
   def initialize(name, options = {})
     @foreign_key = options[:foreign_key] || (name.to_s + "_id").to_sym
     @primary_key = options[:primary_key] || :id
@@ -42,18 +41,34 @@ end
 module Associatable
   # Phase IIIb
   def belongs_to(name, options = {})
-    # ...
+    options = BelongsToOptions.new(name, options)
+    define_method name do
+      foreign_key = self.send(options.foreign_key)
+      model_c = options.model_class
+      res = model_c.where(options.primary_key => foreign_key).first
+    end
+
+    assoc_options[options.class_name.underscore.to_sym] = options
   end
 
   def has_many(name, options = {})
-    # ...
+
+    options = HasManyOptions.new(name, self.to_s, options)
+
+    define_method name do
+      primary_key = self.send(options.primary_key)
+      model_c = options.model_class
+      res = model_c.where(options.foreign_key => primary_key)
+    end
+
   end
 
   def assoc_options
-    # Wait to implement this in Phase IVa. Modify `belongs_to`, too.
+    @assoc_options ||= {}
   end
 end
 
 class SQLObject
   # Mixin Associatable here...
+  extend Associatable
 end
